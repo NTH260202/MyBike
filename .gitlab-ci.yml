@@ -1,0 +1,59 @@
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+services:
+  - docker:19.03.7-dind
+stages:
+  - build jar
+  - build and push docker image
+  - deploy
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+build:
+  image: openjdk:11
+  stage: build jar
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew build
+    - echo $TEST
+    - echo $SECRET
+  artifacts:
+    paths:
+      - build/libs/*.jar    
+  tags:
+    - docker
+
+docker build:
+  image: docker:stable
+  stage: build and push docker image
+  script:
+    - docker build -t $DOCKER_REPO .
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
+    - docker push $DOCKER_REPO
+  tags:
+    - docker
+  only:
+    - develop
+
+deploy:
+  stage: deploy
+  script:
+    - cp $ENV_FILE .env
+    - cat .env
+    - pwd
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
+    - docker stop $APP_NAME || true;
+    - docker system prune -a -f;
+    - docker pull $DOCKER_REPO;
+    - echo $ENV_FILE;
+    - docker container run -d --restart unless-stopped --env-file .env --network $DOCKER_NETWORK --name $APP_NAME -p $PORT:8080 $DOCKER_REPO;
+    - docker logout
+  tags:
+    - shell
+  only:
+    - develop
+

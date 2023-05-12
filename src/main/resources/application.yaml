@@ -1,0 +1,119 @@
+##########################
+# SERVER
+##########################
+server:
+  port: ${SERVER_PORT:8080}
+  host: ${SERVER_HOST:http://localhost:8080}
+
+##########################
+# KEYCLOAK
+##########################
+keycloak:
+  realm: ${KEYCLOAK_REALM:}
+  auth-server-url: ${KEYCLOAK_SERVER_URL:}
+  ssl-required: ${KEYCLOAK_SSL_REQUIRED:external}
+  credentials:
+    secret: ${KEYCLOAK_CLIENT_SECRET:}
+  resource: ${KEYCLOAK_CLIENT_ID:}
+  bearer-only: true
+  use-resource-role-mappings: true
+  allow-any-hostname: true
+
+keycloak-client:
+  username: ${KEYCLOAK_CLIENT_USERNAME:}
+  password: ${KEYCLOAK_CLIENT_PASSWORD:}
+
+
+##########################
+# DATASOURCE
+##########################
+spring:
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bike}
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:013845}
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: true
+    hibernate:
+      ddl-auto: update
+  kafka:
+    retry:
+      topic:
+        attempts: 1
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${GROUP_ID:bike-kafka}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      acks: all
+      retries: 0
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      log-container-config: off
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  ##########################
+  # REDIS
+  ##########################
+  cache:
+    type: redis
+    redis:
+      key-prefix: redis_bike_
+      time-to-live: ${REDIS_TIMEOUT:1d}
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+
+
+##########################
+# GOOGLE CLIENT
+##########################
+google:
+  client-id: ${GOOGLE_CLIENT_ID:}
+  client-secret: ${GOOGLE_CLIENT_SECRET:}
+  auth-server-url: ${GOOGLE_AUTH_URL:}
+  valid-domain: ${GOOGLE_VALID_DOMAIN:fpt.edu.vn}
+
+
+post-threshold: ${POST_THRESHOLD_IN_MINUTES:30}
+trip_cancel_threshold: ${TRIP_CANCEL_THRESHOLD_IN_MINUTES:30}
+trip_remind_time: ${TRIP_REMIND_TIME_IN_MINUTES:5}
+
+##########################
+# APP VARIABLES
+##########################
+bike:
+  client-url: ${CLIENT_URL:*}
+  client-url-host: ${CLIENT_URL:http://54.254.255.27:3000/}
+
+##########################
+# AWS
+##########################
+aws:
+  bucket: ${AWS_BUCKET_NAME:}
+  region: ${AWS_BUCKET_REGION:}
+  access-key: ${AWS_ACCESS_KEY:}
+  secret-key: ${AWS_SECRET_KEY:}
+
+##########################
+# LOG
+##########################
+logging:
+  level:
+    kafka: off
+    sql: off
